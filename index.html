@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>注文フォーム - 職員室</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    :root {
+      --main-color: #4CAF50;
+      --accent-color: #388E3C;
+      --background: #f0f4f8;
+      --white: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background: var(--background);
+      padding: 1.5rem;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--main-color);
+    }
+
+    form {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      background-color: var(--main-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--accent-color);
+    }
+
+    #status {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--main-color);
+    }
+
+    @media screen and (max-width: 480px) {
+      form {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>教職員向け 注文フォーム</h2>
+
+  <form id="orderForm">
+    <label>
+      商品名：
+      <select id="itemName" required>
+        <option value="コーヒー">コーヒー</option>
+        <option value="紅茶">紅茶</option>
+        <option value="チョコレート">チョコレート</option>
+        <option value="キャンディ">キャンディ</option>
+      </select>
+    </label>
+
+    <label>
+      数量：
+      <input type="number" id="quantity" value="1" min="1" required>
+    </label>
+
+    <label>
+      職員室：
+      <select id="room" required>
+        <option value="1階職員室">1階職員室</option>
+        <option value="商業センター">商業センター</option>
+        <option value="保健室">保健室</option>
+        <option value="校長室">校長室</option>
+      </select>
+    </label>
+
+    <button type="submit">✅ 注文する</button>
+  </form>
+
+  <div id="status"></div>
+
+  <script>
+    const GAS_URL = '★★★ あなたのGASのWebアプリURLをここに貼ってください ★★★';
+
+    window.onload = function () {
+      liff.init({ liffId: '★★★ あなたのLIFF IDをここに貼ってください ★★★' })
+        .then(() => {
+          if (!liff.isLoggedIn()) {
+            liff.login();
+          }
+        })
+        .catch(err => {
+          document.getElementById("status").textContent = 'LIFF初期化エラー: ' + err;
+        });
+    };
+
+    document.getElementById('orderForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      liff.getProfile().then(profile => {
+        const orderData = {
+          userName: profile.displayName,
+          itemName: document.getElementById('itemName').value,
+          quantity: document.getElementById('quantity').value,
+          room: document.getElementById('room').value
+        };
+
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        })
+        .then(res => res.json())
+        .then(response => {
+          document.getElementById('status').textContent = '✅ 注文を受け付けました！';
+          document.getElementById('orderForm').reset();
+        })
+        .catch(error => {
+          document.getElementById('status').textContent = '⚠️ 注文に失敗しました: ' + error;
+        });
+      });
+    });
+  </script>
+</body>
+</html>
